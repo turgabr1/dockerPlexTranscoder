@@ -1,26 +1,33 @@
-# Use the latest 2.1 version of CircleCI pipeline process engine.
-# See: https://circleci.com/docs/2.0/configuration-reference
 version: 2.1
-
-# Define a job to be invoked later in a workflow.
-# See: https://circleci.com/docs/2.0/configuration-reference/#jobs
-jobs:
-  say-hello:
-    # Specify the execution environment. You can specify an image from Dockerhub or use one of our Convenience Images from CircleCI's Developer Hub.
-    # See: https://circleci.com/docs/2.0/configuration-reference/#docker-machine-macos-windows-executor
-    docker:
-      - image: cimg/base:stable
-    # Add steps to the job
-    # See: https://circleci.com/docs/2.0/configuration-reference/#steps
+commands:
+  setup:
     steps:
       - checkout
       - run:
-          name: "Say hello"
-          command: "echo Hello, World!"
-
-# Invoke jobs via workflows
-# See: https://circleci.com/docs/2.0/configuration-reference/#workflows
+          name: Update arm machine
+          command: |
+            sudo apt-get update
+jobs:
+  build-medium:
+    machine:
+      image: 'ubuntu-2004:202101-01'
+    resource_class: arm.medium
+    steps:
+      - setup
+      - run:
+          name: Login to Docker Hub
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            docker build -t nikopole/plexTranscoder .
+            docker tag httpd nikopole/plexTranscoder:latest
+            docker push nikopole/plexTranscoder
 workflows:
-  say-hello-workflow:
+  version: 2
+  build-and-deploy:
     jobs:
-      - say-hello
+      - build-medium:
+          context:
+            - DOCKER_HUB
