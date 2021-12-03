@@ -151,7 +151,7 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 							MountPath: "/shared",
 						},
 						{
-							Name:      "transcode",
+							Name:      "system",
 							MountPath: "/transcode",
 						},
 					},
