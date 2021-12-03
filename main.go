@@ -25,7 +25,13 @@ var photosPVC = os.Getenv("PHOTOS_PVC")
 var tvPVC = os.Getenv("TV_PVC")
 
 // system pvc name
-var systemPVC = os.Getenv("SYSTEM_PVC")
+var configPVC = os.Getenv("CONFIG_PVC")
+
+// system pvc name
+var transcodePVC = os.Getenv("TRANSCODE_PVC")
+
+// system pvc name
+var sharedPVC = os.Getenv("SHARED_PVC")
 
 // pms namespace
 var namespace = os.Getenv("KUBE_NAMESPACE")
@@ -107,8 +113,10 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 	envVars := toCoreV1EnvVar(env)
 	fmt.Println(moviesPVC)
 	fmt.Println(tvPVC)
-	fmt.Println(systemPVC)
 	fmt.Println(photosPVC)
+	fmt.Println(configPVC)
+	fmt.Println(sharedPVC)
+	fmt.Println(transcodePVC)
 	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "pms-elastic-transcoder-",
@@ -142,17 +150,17 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 							ReadOnly:  true,
 						},
 						{
-							Name:      "system",
+							Name:      "config",
 							MountPath: "/config",
 							ReadOnly:  true,
 						},
 						{
-							Name:      "system",
+							Name:      "shared",
 							MountPath: "/shared",
 						},
 						{
-							Name:      "system",
-							MountPath: "/transcode",
+							Name:      "transcode",
+							MountPath: "/tmp/Transcode",
 						},
 					},
 				},
@@ -183,10 +191,26 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 					},
 				},
 				{
-					Name: "system",
+					Name: "config",
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: systemPVC,
+							ClaimName: configPVC,
+						},
+					},
+				},
+				{
+					Name: "shared",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: sharedPVC,
+						},
+					},
+				},
+				{
+					Name: "transcode",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: transcodePVC,
 						},
 					},
 				},
@@ -218,9 +242,9 @@ func waitForPodCompletion(cl kubernetes.Interface, pod *corev1.Pod) error {
 
 		switch pod.Status.Phase {
 		case corev1.PodPending:
+			fmt.Println(pod)
 		case corev1.PodRunning:
-		case corev1.PodUnknown:
-			log.Printf("Warning: pod %q is in an unknown state", pod.Name)
+			fmt.Println(pod.Status)
 		case corev1.PodFailed:
 			return fmt.Errorf("pod %q failed", pod.Name)
 		case corev1.PodSucceeded:
