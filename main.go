@@ -1,13 +1,14 @@
 package main
 
 import (
+	"context"
 	"fmt"
+	"github.com/turgabr1/dockerPlexTranscoder/pkg/signals"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/turgabr1/dockerPlexTranscoder/pkg/signals"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -56,7 +57,7 @@ func main() {
 		log.Fatalf("Error building kubernetes clientset: %s", err)
 	}
 
-	pod, err = kubeClient.CoreV1().Pods(namespace).Create(pod)
+	pod, err = kubeClient.CoreV1().Pods(namespace).Create(context.Background(), pod, metav1.CreateOptions{})
 	if err != nil {
 		log.Fatalf("Error creating pod: %s", err)
 	}
@@ -80,7 +81,7 @@ func main() {
 	}
 
 	log.Printf("Cleaning up pod...")
-	err = kubeClient.CoreV1().Pods(namespace).Delete(pod.Name, nil)
+	err = kubeClient.CoreV1().Pods(namespace).Delete(context.Background(), pod.Name, metav1.DeleteOptions{})
 	if err != nil {
 		log.Fatalf("Error cleaning up pod: %s", err)
 	}
@@ -104,7 +105,11 @@ func rewriteArgs(in []string) {
 
 func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 	envVars := toCoreV1EnvVar(env)
-	return &corev1.Pod{
+	fmt.Println(moviesPVC)
+	fmt.Println(tvPVC)
+	fmt.Println(systemPVC)
+	fmt.Println(photosPVC)
+	pod := &corev1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			GenerateName: "pms-elastic-transcoder-",
 		},
@@ -188,6 +193,8 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 			},
 		},
 	}
+	fmt.Println(pod)
+	return pod
 }
 
 func toCoreV1EnvVar(in []string) []corev1.EnvVar {
@@ -204,7 +211,7 @@ func toCoreV1EnvVar(in []string) []corev1.EnvVar {
 
 func waitForPodCompletion(cl kubernetes.Interface, pod *corev1.Pod) error {
 	for {
-		pod, err := cl.CoreV1().Pods(pod.Namespace).Get(pod.Name, metav1.GetOptions{})
+		pod, err := cl.CoreV1().Pods(pod.Namespace).Get(context.Background(), pod.Name, metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
