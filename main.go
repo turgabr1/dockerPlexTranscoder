@@ -14,14 +14,17 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 )
 
-// data pvc name
-var dataPVC = os.Getenv("DATA_PVC")
+// movies pvc name
+var moviesPVC = os.Getenv("MOVIES_PVC")
 
-// config pvc name
-var configPVC = os.Getenv("CONFIG_PVC")
+// photos pvc name
+var photosPVC = os.Getenv("PHOTOS_PVC")
 
-// transcode pvc name
-var transcodePVC = os.Getenv("TRANSCODE_PVC")
+// tv pvc name
+var tvPVC = os.Getenv("TV_PVC")
+
+// system pvc name
+var systemPVC = os.Getenv("SYSTEM_PVC")
 
 // pms namespace
 var namespace = os.Getenv("KUBE_NAMESPACE")
@@ -119,14 +122,28 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 					WorkingDir: cwd,
 					VolumeMounts: []corev1.VolumeMount{
 						{
-							Name:      "data",
-							MountPath: "/data",
+							Name:      "movies",
+							MountPath: "/data/Movies",
 							ReadOnly:  true,
 						},
 						{
-							Name:      "config",
+							Name:      "photos",
+							MountPath: "/data/Photos",
+							ReadOnly:  true,
+						},
+						{
+							Name:      "tv",
+							MountPath: "/data/Tv",
+							ReadOnly:  true,
+						},
+						{
+							Name:      "system",
 							MountPath: "/config",
 							ReadOnly:  true,
+						},
+						{
+							Name:      "system",
+							MountPath: "/shared",
 						},
 						{
 							Name:      "transcode",
@@ -137,26 +154,34 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 			},
 			Volumes: []corev1.Volume{
 				{
-					Name: "data",
+					Name: "movies",
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: dataPVC,
+							ClaimName: moviesPVC,
 						},
 					},
 				},
 				{
-					Name: "config",
+					Name: "photos",
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: configPVC,
+							ClaimName: photosPVC,
 						},
 					},
 				},
 				{
-					Name: "transcode",
+					Name: "tv",
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
-							ClaimName: transcodePVC,
+							ClaimName: tvPVC,
+						},
+					},
+				},
+				{
+					Name: "system",
+					VolumeSource: corev1.VolumeSource{
+						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
+							ClaimName: systemPVC,
 						},
 					},
 				},
