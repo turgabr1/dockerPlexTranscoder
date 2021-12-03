@@ -13,9 +13,9 @@ jobs:
       - run:
           name: Build multiarch docker image and push
           command: |
-            docker build -t nikopole/plexTranscoder .
-            docker tag httpd nikopole/plexTranscoder:latest
-            docker push nikopole/plexTranscoder
+            docker build -t nikopole/plextranscoder .
+            docker tag httpd nikopole/plextranscoder:latest
+            docker push nikopole/plextranscoder
 
 workflows:
   build:
