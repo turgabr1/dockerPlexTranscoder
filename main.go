@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/munnerz/kube-plex/pkg/signals"
+	"github.com/turgabr1/dockerPlexTranscoder/pkg/signals"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -99,9 +99,6 @@ func rewriteArgs(in []string) {
 	}
 }
 
-//docker build -t nikopole/plexTranscoder .
-//docker tag httpd nikopole/plexTranscoder:latest
-//docker push nikopole/plexTranscoder
 func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 	envVars := toCoreV1EnvVar(env)
 	return &corev1.Pod{
