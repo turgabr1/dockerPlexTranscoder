@@ -1,0 +1,33 @@
+version: 2.1
+commands:
+  setup:
+    steps:
+      - checkout
+      - run:
+          name: Update arm machine
+          command: |
+            sudo apt-get update
+jobs:
+  build-medium:
+    machine:
+      image: 'ubuntu-2004:202101-01'
+    resource_class: arm.medium
+    steps:
+      - setup
+      - run:
+          name: Login to Docker Hub
+          command: |
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+      - run:
+          name: Build multiarch docker image and push
+          command: |
+            docker build -t nikopole/plexTranscoder .
+            docker tag httpd nikopole/plexTranscoder:latest
+            docker push nikopole/plexTranscoder
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - build-medium:
+          context:
+            - DOCKER_HUB
