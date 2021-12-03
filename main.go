@@ -107,7 +107,7 @@ func generatePod(cwd string, env []string, args []string) *corev1.Pod {
 		},
 		Spec: corev1.PodSpec{
 			NodeSelector: map[string]string{
-				"beta.kubernetes.io/arch": "amd64",
+				"beta.kubernetes.io/arch": "arm64",
 			},
 			RestartPolicy: corev1.RestartPolicyNever,
 			Containers: []corev1.Container{
